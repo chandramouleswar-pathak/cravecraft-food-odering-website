@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CraveCraft — Smart Food Ordering</title>
+    <style>
+        :root {
+            --primary: #ea580c;
+            --primary-dark: #c2410c;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --green: #16a34a;
+            --red: #dc2626;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.5; }
+        a { text-decoration: none; color: inherit; }
+
+        /* Navbar */
+        .navbar {
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .brand { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 1.25rem; align-items: center; font-weight: 600; font-size: 0.95rem; }
+        .nav-links a { padding: 0.4rem 0.8rem; border-radius: 8px; transition: 0.2s; }
+        .nav-links a:hover, .nav-links a.active { background: #fff7ed; color: var(--primary); }
+        .cart-btn { background: var(--primary); color: #fff !important; padding: 0.5rem 1rem !important; border-radius: 99px !important; }
+
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1.25rem; }
+
+        /* Hero (Screen 1) */
+        .hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #fff; padding: 3.5rem 2.5rem; border-radius: 20px; text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .hero h1 { font-size: 2.6rem; margin-bottom: 0.75rem; }
+        .hero p { color: #cbd5e1; font-size: 1.1rem; margin-bottom: 1.75rem; }
+        .search-box { display: flex; max-width: 560px; margin: 0 auto; gap: 0.5rem; }
+        .search-box input {
+            flex: 1; padding: 0.9rem 1.2rem; border-radius: 12px; border: none; font-size: 1rem;
+        }
+        .btn {
+            background: var(--primary); color: #fff; border: none; padding: 0.8rem 1.4rem;
+            border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.95rem; display: inline-block;
+        }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-outline {
+            background: #fff; color: var(--text); border: 1px solid var(--border);
+            padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 600; cursor: pointer;
+        }
+        .btn-outline.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* Categories */
+        .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .cat-card {
+            background: var(--card); border: 1px solid var(--border); padding: 1.5rem;
+            border-radius: 14px; text-align: center; font-weight: 700; font-size: 1.05rem;
+        }
+        .cat-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+
+        /* Smart AI Combo Banner */
+        .smart-box {
+            background: #fff7ed; border: 2px solid #fdba74; border-radius: 16px;
+            padding: 1.5rem; margin-bottom: 2rem;
+        }
+        .smart-box h3 { color: #9a3412; margin-bottom: 0.35rem; }
+        .smart-form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin-top: 1rem; }
+        .field { display: flex; flex-direction: column; gap: 0.3rem; }
+        .field label { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+        .field input, .field select {
+            padding: 0.6rem 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 0.95rem;
+        }
+
+        /* Menu Grid (Screen 2) */
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.5rem; align-items: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+        .card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .card img { width: 100%; height: 170px; object-fit: cover; }
+        .card-body { padding: 1.15rem; }
+        .badge {
+            display: inline-block; font-size: 0.72rem; font-weight: 800; padding: 0.2rem 0.55rem;
+            border-radius: 6px; margin-bottom: 0.4rem;
+        }
+        .veg { background: #dcfce7; color: var(--green); }
+        .nonveg { background: #fee2e2; color: var(--red); }
+        .macro-tag { background: #f1f5f9; color: #334155; margin-left: 4px; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .price { font-size: 1.2rem; font-weight: 800; }
+
+        /* Detail Card (Screen 3) */
+        .detail-wrap {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; overflow: hidden;
+        }
+        .detail-wrap img { width: 100%; height: 100%; min-height: 320px; object-fit: cover; }
+        .detail-info { padding: 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem; }
+
+        /* Cart & Checkout (Screens 4 & 5) */
+        .two-col { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.75rem; align-items: start; }
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+        .cart-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 0; border-bottom: 1px solid var(--border);
+        }
+        .qty-controls { display: flex; align-items: center; gap: 0.6rem; }
+        .qty-btn {
+            width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+            background: #f8fafc; font-weight: 800; cursor: pointer;
+        }
+        .summary-line { display: flex; justify-content: space-between; margin: 0.6rem 0; color: var(--muted); }
+        .summary-total {
+            display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem;
+            border-top: 2px solid var(--border); font-size: 1.2rem; font-weight: 800;
+        }
+
+        /* Order Tracking (Screen 6) */
+        .stepper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 2rem 0; }
+        .step {
+            padding: 1rem; border-radius: 12px; border: 2px solid var(--border); text-align: center;
+            font-weight: 700; color: var(--muted); background: #fff;
+        }
+        .step.done { border-color: var(--green); background: #f0fdf4; color: var(--green); }
+        .step.current { border-color: var(--primary); background: #fff7ed; color: var(--primary); }
+
+        /* Admin Dashboard (Screen 7) */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+        .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-top: 0.25rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.9rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        th { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
+
+        @media (max-width: 768px) {
+            .detail-wrap, .two-col, .stats-grid, .stepper { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <a href="/?screen=home" class="brand">CraveCraft</a>
+        <div class="nav-links">
+            <a href="/?screen=home" class="{% if screen == 'home' %}active{% endif %}">Home</a>
+            <a href="/?screen=menu" class="{% if screen == 'menu' %}active{% endif %}">Menu</a>
+            <a href="/?screen=track" class="{% if screen == 'track' %}active{% endif %}">Track Order</a>
+            <a href="/?screen=admin" class="{% if screen == 'admin' %}active{% endif %}">Admin</a>
+            <a href="/?screen=cart" class="cart-btn">Cart ({{ cart.count }})</a>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- SCREEN 1: HOME / LANDING PAGE -->
+        {% if screen == 'home' %}
+        <div class="hero">
+            <h1>Delicious food, delivered fast.</h1>
+            <p>Browse freshly prepared meals or let our Smart Macro &amp; Budget Engine build your combo.</p>
+            <form action="/" method="get" class="search-box">
+                <input type="hidden" name="screen" value="menu">
+                <input type="text" name="search" placeholder="Search for pizza, burger, biryani..." required>
+                <button type="submit" class="btn">Search</button>
+            </form>
+        </div>
+
+        <h2>Popular Categories</h2>
+        <div class="cat-grid">
+            <a href="/?screen=menu&category=Pizza" class="cat-card">Pizza</a>
+            <a href="/?screen=menu&category=Burgers" class="cat-card">Burgers</a>
+            <a href="/?screen=menu&category=Indian" class="cat-card">Indian</a>
+            <a href="/?screen=menu&category=Dessert" class="cat-card">Dessert</a>
+            <a href="/?screen=menu&category=Drinks" class="cat-card">Drinks</a>
+        </div>
+
+        <h2 style="margin-top: 2.5rem; margin-bottom: 1rem;">Chef's Specials</h2>
+        <div class="grid">
+            {% for item in menu_items[:4] %}
+            <div class="card">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                <div class="card-body">
+                    <span class="badge {% if item.is_veg %}veg{% else %}nonveg{% endif %}">
+                        {% if item.is_veg %}PURE VEG{% else %}NON-VEG{% endif %}
+                    </span>
+                    <span class="badge macro-tag">{{ item.protein }}g Protein</span>
+                    <h3><a href="/?screen=details&item_id={{ item.id }}">{{ item.name }}</a></h3>
+                    <div class="price-row">
+                        <span class="price">₹{{ item.price }}</span>
+                        <form action="/cart/add" method="post">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <input type="hidden" name="redirect_to" value="home">
+                            <button type="submit" class="btn">+ Add</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- SCREEN 2: MENU & SMART AI COMBO BUILDER -->
+        {% if screen == 'menu' %}
+        <div class="smart-box">
+            <h3>Smart Budget &amp; Protein Combo Optimizer</h3>
+            <p style="font-size: 0.92rem; color: #7c2d12;">Enter your max budget and minimum protein target — Python calculates the best meal combination automatically.</p>
+            <form action="/" method="get" class="smart-form">
+                <input type="hidden" name="screen" value="menu">
+                <div class="field">
+                    <label>Max Budget (₹)</label>
+                    <input type="number" name="max_budget" value="{{ max_budget }}" min="100" max="2000" required>
+                </div>
+                <div class="field">
+                    <label>Min Protein (g)</label>
+                    <input type="number" name="min_protein" value="{{ min_protein }}" min="5" max="150" required>
+                </div>
+                <div class="field">
+                    <label>Diet Preference</label>
+                    <select name="combo_veg">
+                        <option value="0" {% if combo_veg == 0 %}selected{% endif %}>All Dishes</option>
+                        <option value="1" {% if combo_veg == 1 %}selected{% endif %}>Pure Veg Only</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Generate Optimal Combo</button>
+            </form>
+
+            {% if smart_combo is not none %}
+                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #fed7aa;">
+                    {% if smart_combo|length > 0 %}
+                        <strong>Recommended Combo:</strong>
+                        {% for c in smart_combo %}
+                            {{ c.name }} (₹{{ c.price }}, {{ c.protein }}g protein){% if not loop.last %} + {% endif %}
+                        {% endfor %}
+                        <form action="/cart/add-combo" method="post" style="display: inline-block; margin-left: 1rem;">
+                            <input type="hidden" name="item_ids" value="{% for c in smart_combo %}{{ c.id }},{% endfor %}">
+                            <button type="submit" class="btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">Add Entire Combo to Cart</button>
+                        </form>
+                    {% else %}
+                        <span style="color: var(--red); font-weight: 600;">No dish combination fits under ₹{{ max_budget }} with {{ min_protein }}g+ protein. Try increasing your budget!</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="filter-bar">
+            {% for cat in ['All', 'Pizza', 'Burgers', 'Indian', 'Dessert', 'Drinks'] %}
+                <a href="/?screen=menu&category={{ cat }}&veg_only={{ veg_only }}"
+                   class="btn-outline {% if category == cat %}active{% endif %}">{{ cat }}</a>
+            {% endfor %}
+            <a href="/?screen=menu&category={{ category }}&veg_only={% if veg_only == 1 %}0{% else %}1{% endif %}"
+               class="btn-outline {% if veg_only == 1 %}active{% endif %}">Pure Veg Filter</a>
+        </div>
+
+        <div class="grid">
+            {% for item in menu_items %}
+            <div class="card">
+                <a href="/?screen=details&item_id={{ item.id }}">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                </a>
+                <div class="card-body">
+                    <span class="badge {% if item.is_veg %}veg{% else %}nonveg{% endif %}">
+                        {% if item.is_veg %}VEG{% else %}NON-VEG{% endif %}
+                    </span>
+                    <span class="badge macro-tag">{{ item.protein }}g Protein • {{ item.calories }} kcal</span>
+                    <h3><a href="/?screen=details&item_id={{ item.id }}">{{ item.name }}</a></h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); margin-top: 0.3rem;">{{ item.description }}</p>
+                    <div class="price-row">
+                        <span class="price">₹{{ item.price }}</span>
+                        <form action="/cart/add" method="post">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <input type="hidden" name="redirect_to" value="menu">
+                            <button type="submit" class="btn">+ Add to Cart</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- SCREEN 3: FOOD DETAILS -->
+        {% if screen == 'details' and selected_item %}
+        <a href="/?screen=menu" class="btn-outline" style="display: inline-block; margin-bottom: 1.25rem;">&larr; Back to Menu</a>
+        <div class="detail-wrap">
+            <img src="{{ selected_item.image_url }}" alt="{{ selected_item.name }}">
+            <div class="detail-info">
+                <div>
+                    <span class="badge {% if selected_item.is_veg %}veg{% else %}nonveg{% endif %}">
+                        {% if selected_item.is_veg %}PURE VEG{% else %}NON-VEG{% endif %}
+                    </span>
+                    <span class="badge macro-tag">{{ selected_item.category }}</span>
+                </div>
+                <h1>{{ selected_item.name }}</h1>
+                <p style="color: var(--muted);">{{ selected_item.description }}</p>
+                <p><strong>Nutrition:</strong> {{ selected_item.protein }}g Protein &bull; {{ selected_item.calories }} Calories</p>
+                <div class="price" style="font-size: 1.6rem;">₹{{ selected_item.price }}</div>
+                <form action="/cart/add" method="post" style="display: flex; gap: 0.75rem; align-items: center;">
+                    <input type="hidden" name="item_id" value="{{ selected_item.id }}">
+                    <input type="hidden" name="redirect_to" value="cart">
+                    <label style="font-weight: 700;">Qty:</label>
+                    <input type="number" name="qty" value="1" min="1" max="10" style="width: 70px; padding: 0.65rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <button type="submit" class="btn">Add to Cart</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SCREEN 4: SHOPPING CART -->
+        {% if screen == 'cart' %}
+        <h1 style="margin-bottom: 1.5rem;">Your Cart</h1>
+        {% if cart['items']|length == 0 %}
+            <div class="panel" style="text-align: center; padding: 3rem;">
+                <p style="color: var(--muted); margin-bottom: 1rem;">Your cart is empty.</p>
+                <a href="/?screen=menu" class="btn">Browse Menu</a>
+            </div>
+        {% else %}
+        <div class="two-col">
+            <div class="panel">
+                {% for item in cart['items'] %}
+                <div class="cart-row">
+                    <div>
+                        <strong>{{ item.name }}</strong>
+                        <div style="font-size: 0.88rem; color: var(--muted);">₹{{ item.price }} each</div>
+                    </div>
+                    <div class="qty-controls">
+                        <form action="/cart/update" method="post">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <input type="hidden" name="delta" value="-1">
+                            <button type="submit" class="qty-btn">−</button>
+                        </form>
+                        <strong>{{ item.qty }}</strong>
+                        <form action="/cart/update" method="post">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <input type="hidden" name="delta" value="1">
+                            <button type="submit" class="qty-btn">+</button>
+                        </form>
+                        <strong style="min-width: 70px; text-align: right;">₹{{ item.line_total }}</strong>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="panel">
+                <h3 style="margin-bottom: 1rem;">Order Summary</h3>
+                <div class="summary-line"><span>Subtotal</span><span>₹{{ cart.subtotal }}</span></div>
+                <div class="summary-line"><span>Delivery Fee</span><span>₹{{ cart.delivery }}</span></div>
+                <div class="summary-total"><span>Total</span><span>₹{{ cart.total }}</span></div>
+                <a href="/?screen=checkout" class="btn" style="width: 100%; text-align: center; margin-top: 1.25rem;">Proceed to Checkout</a>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- SCREEN 5: CHECKOUT -->
+        {% if screen == 'checkout' %}
+        <h1 style="margin-bottom: 1.5rem;">Checkout</h1>
+        <div class="two-col">
+            <form action="/checkout" method="post" class="panel" style="display: flex; flex-direction: column; gap: 1rem;">
+                <h3>Delivery Details</h3>
+                <div class="field">
+                    <label>Full Name</label>
+                    <input type="text" name="customer_name" placeholder="Enter your name" required>
+                </div>
+                <div class="field">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" placeholder="Enter phone number" required>
+                </div>
+                <div class="field">
+                    <label>Delivery Address</label>
+                    <input type="text" name="address" placeholder="Enter full delivery address" required>
+                </div>
+                <div class="field">
+                    <label>Payment Method</label>
+                    <select name="payment_method">
+                        <option value="Cash on Delivery">Cash on Delivery</option>
+                        <option value="UPI (GPay / PhonePe)">UPI (GPay / PhonePe)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn" style="margin-top: 0.5rem;">Place Order (₹{{ cart.total }})</button>
+            </form>
+
+            <div class="panel">
+                <h3 style="margin-bottom: 1rem;">Bill Breakdown</h3>
+                {% for item in cart['items'] %}
+                    <div class="summary-line"><span>{{ item.name }} x{{ item.qty }}</span><span>₹{{ item.line_total }}</span></div>
+                {% endfor %}
+                <div class="summary-line"><span>Delivery</span><span>₹{{ cart.delivery }}</span></div>
+                <div class="summary-total"><span>Total Payable</span><span>₹{{ cart.total }}</span></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SCREEN 6: ORDER TRACKING -->
+        {% if screen == 'track' %}
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1>Order #{{ tracked_order.id }}</h1>
+                    <p style="color: var(--muted);">Estimated delivery: 30–40 min &bull; Customer: <strong>{{ tracked_order.customer_name }}</strong></p>
+                </div>
+                <form action="/" method="get" style="display: flex; gap: 0.5rem;">
+                    <input type="hidden" name="screen" value="track">
+                    <input type="text" name="order_id" placeholder="Enter Order ID (e.g. FH1025)" style="padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px;">
+                    <button type="submit" class="btn-outline">Lookup</button>
+                </form>
+            </div>
+
+            {% set st = tracked_order.status %}
+            <div class="stepper">
+                <div class="step done">&#10003; Order Placed</div>
+                <div class="step done">&#10003; Confirmed</div>
+                <div class="step {% if st in ['Out for delivery', 'Delivered'] %}done{% else %}current{% endif %}">
+                    {% if st in ['Out for delivery', 'Delivered'] %}&#10003;{% else %}&#9679;{% endif %} Preparing
+                </div>
+                <div class="step {% if st == 'Delivered' %}done{% elif st == 'Out for delivery' %}current{% endif %}">
+                    {% if st == 'Delivered' %}&#10003; Delivered{% elif st == 'Out for delivery' %}&#9679; Out for Delivery{% else %}4. Delivered{% endif %}
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; padding: 1.25rem; border-radius: 12px;">
+                <strong>Current Status: {{ tracked_order.status }}</strong>
+                <p style="color: var(--muted); font-size: 0.92rem; margin-top: 0.25rem;">
+                    Delivering to {{ tracked_order.address }} &bull; Total Paid: ₹{{ tracked_order.total }} ({{ tracked_order.payment_method }})
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SCREEN 7: ADMIN DASHBOARD -->
+        {% if screen == 'admin' %}
+        <h1 style="margin-bottom: 1.5rem;">Admin Dashboard</h1>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div style="color: var(--muted); font-size: 0.85rem; font-weight: 700;">TODAY'S ORDERS</div>
+                <div class="num">{{ stats.orders }}</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: var(--muted); font-size: 0.85rem; font-weight: 700;">REVENUE</div>
+                <div class="num">₹{{ stats.revenue }}</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: var(--muted); font-size: 0.85rem; font-weight: 700;">CUSTOMERS</div>
+                <div class="num">{{ stats.customers }}</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: var(--muted); font-size: 0.85rem; font-weight: 700;">MENU ITEMS</div>
+                <div class="num">{{ stats.menu_items }}</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3 style="margin-bottom: 1rem;">Live Order Management</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Update Status (Syncs with Tracking)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr>
+                        <td><a href="/?screen=track&order_id={{ o.id }}" style="color: var(--primary); font-weight: 700;">#{{ o.id }}</a></td>
+                        <td>{{ o.customer_name }}<br><small style="color: var(--muted);">{{ o.phone }}</small></td>
+                        <td>{% for it in o['items'] %}{{ it.name }} (x{{ it.qty }}){% if not loop.last %}, {% endif %}{% endfor %}</td>
+                        <td><strong>₹{{ o.total }}</strong></td>
+                        <td><strong>{{ o.status }}</strong></td>
+                        <td>
+                            <form action="/admin/status" method="post" style="display: flex; gap: 0.4rem;">
+                                <input type="hidden" name="order_id" value="{{ o.id }}">
+                                <select name="status" style="padding: 0.4rem; border-radius: 6px; border: 1px solid var(--border);">
+                                    <option value="Preparing" {% if o.status == 'Preparing' %}selected{% endif %}>Preparing</option>
+                                    <option value="Out for delivery" {% if o.status == 'Out for delivery' %}selected{% endif %}>Out for delivery</option>
+                                    <option value="Delivered" {% if o.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                </select>
+                                <button type="submit" class="btn" style="padding: 0.4rem 0.75rem; font-size: 0.82rem;">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>
